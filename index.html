@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Pattern Challenge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .coin-container {
+            width: 120px;
+            height: 120px;
+            margin: 20px auto;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .coin {
+            width: 120px;
+            height: 120px;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 1s ease-in-out;
+        }
+
+        .coin .side {
+            width: 120px;
+            height: 120px;
+            position: absolute;
+            border-radius: 50%;
+            backface-visibility: hidden;
+            background-size: cover;
+        }
+
+        .heads {
+            background-image: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.UOTlApUshRMFnxxcoaUfFAHaHf%26pid%3DApi&f=1&ipt=02c235336c9b94c2ab1899b244281c51a6eebea30530ba73fa40012d09b8376c&ipo=images');
+        }
+
+        .tails {
+            background-image: url('https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.argcollectibles.com%2Fwp-content%2Fuploads%2F2020%2F12%2F66-2048x1961.jpg&f=1&nofb=1&ipt=2335a78c09df236c69463532650ed081e693738b7bf47abedd1daa76e53d6f3e&ipo=images');
+            transform: rotateY(180deg);
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #registerButton {
+            margin-top: 10px;
+            background-color: #28a745;
+        }
+
+        #registerButton:hover {
+            background-color: #218838;
+        }
+
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 60%;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Coin Pattern Challenge</h1>
+
+    <div class="coin-container">
+        <div class="coin" id="coin">
+            <div class="side heads"></div>
+            <div class="side tails"></div>
+        </div>
+    </div>
+
+    <button onclick="flipCoin()">Flip Coin</button>
+    <p id="result">Make your first flip...</p>
+    <p id="pattern">Current pattern: </p>
+    <p id="status"></p>
+    <button id="registerButton" onclick="registerPattern()" disabled>Register Pattern</button>
+
+    <table>
+        <tr>
+            <th>Number of Flips</th>
+            <th>Possible Patterns</th>
+            <th>Registered Patterns</th>
+        </tr>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script>
+        let currentPattern = [];
+        let registeredPatterns = new Set();
+        let patternsByTiradas = Array(25).fill(0);
+        let flipping = false;
+
+        function initTable() {
+            let tableBody = document.getElementById("tableBody");
+            for (let i = 1; i <= 25; i++) {
+                let row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${i}</td>
+                    <td>${Math.pow(2, i)}</td>
+                    <td id="patronesConseguidos-${i}">0</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+
+        function flipCoin() {
+            if (flipping) return;
+            flipping = true;
+
+            let coin = document.getElementById("coin");
+            let outcome = Math.random() < 0.5 ? "heads" : "tails";
+            let flipRotation = outcome === "heads" ? 0 : 180;
+
+            coin.style.transform = `rotateY(${360 + flipRotation}deg)`;
+
+            setTimeout(() => {
+                document.getElementById("result").innerText = "Result: " + outcome;
+                currentPattern.push(outcome);
+                document.getElementById("pattern").innerText = "Current pattern: " + currentPattern.join(", ");
+                checkPattern();
+                flipping = false;
+            }, 1000);
+        }
+
+        function checkPattern() {
+            let patternString = currentPattern.join("-");
+            let statusText = registeredPatterns.has(patternString)
+                ? "This pattern is already registered."
+                : "New pattern! You can register it.";
+
+            document.getElementById("status").innerText = statusText;
+            document.getElementById("registerButton").disabled = registeredPatterns.has(patternString);
+        }
+
+        function registerPattern() {
+            let patternString = currentPattern.join("-");
+            if (!registeredPatterns.has(patternString)) {
+                registeredPatterns.add(patternString);
+                let flips = currentPattern.length;
+                patternsByTiradas[flips - 1]++;
+
+                document.getElementById(`patronesConseguidos-${flips}`).innerText = patternsByTiradas[flips - 1];
+
+                document.getElementById("status").innerText = "Pattern registered successfully!";
+                document.getElementById("registerButton").disabled = true;
+
+                resetPattern();
+            }
+        }
+
+        function resetPattern() {
+            currentPattern = [];
+            document.getElementById("pattern").innerText = "Current pattern: ";
+            document.getElementById("result").innerText = "Make your first flip...";
+        }
+
+        initTable();
+    </script>
+
+</body>
+</html>
